@@ -7,6 +7,14 @@ class PortfolioController {
    */
   async sendContactEmail(req, res) {
     try {
+      // Debug: Log environment variables (without sensitive data)
+      console.log('🔍 Environment Variables Check:');
+      console.log('   EMAIL_HOST:', process.env.EMAIL_HOST || 'NOT SET');
+      console.log('   EMAIL_PORT:', process.env.EMAIL_PORT || 'NOT SET');
+      console.log('   EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'NOT SET');
+      console.log('   EMAIL_PASS:', process.env.EMAIL_PASS ? `SET (${process.env.EMAIL_PASS.length} chars)` : 'NOT SET');
+      console.log('   PORTFOLIO_EMAIL:', process.env.PORTFOLIO_EMAIL || 'NOT SET');
+      
       const { 
         name, 
         email, 
@@ -211,6 +219,50 @@ class PortfolioController {
       res.status(500).json({
         success: false,
         message: 'Không thể lấy thông tin liên hệ'
+      });
+    }
+  }
+
+  /**
+   * Debug endpoint to check email configuration
+   * REMOVE THIS IN PRODUCTION!
+   */
+  async debugEmailConfig(req, res) {
+    try {
+      const emailUtils = require('../utils/emailUtils');
+      
+      const config = {
+        EMAIL_HOST: process.env.EMAIL_HOST || 'NOT SET',
+        EMAIL_PORT: process.env.EMAIL_PORT || 'NOT SET',
+        EMAIL_SECURE: process.env.EMAIL_SECURE || 'NOT SET',
+        EMAIL_USER: process.env.EMAIL_USER ? 'SET' : 'NOT SET',
+        EMAIL_PASS: process.env.EMAIL_PASS ? `SET (${process.env.EMAIL_PASS.length} chars)` : 'NOT SET',
+        EMAIL_FROM: process.env.EMAIL_FROM || 'NOT SET',
+        PORTFOLIO_EMAIL: process.env.PORTFOLIO_EMAIL || 'NOT SET',
+        NODE_ENV: process.env.NODE_ENV || 'NOT SET'
+      };
+
+      // Check if transporter exists
+      const hasTransporter = emailUtils.transporter !== null;
+
+      res.status(200).json({
+        success: true,
+        message: 'Email Configuration Debug',
+        data: {
+          environmentVariables: config,
+          hasTransporter: hasTransporter,
+          transporterStatus: hasTransporter ? 'READY' : 'NOT INITIALIZED',
+          emailMode: hasTransporter ? 'REAL EMAIL' : 'SIMULATION MODE'
+        }
+      });
+
+    } catch (error) {
+      console.error('Debug email config error:', error);
+      
+      res.status(500).json({
+        success: false,
+        message: 'Không thể kiểm tra cấu hình email',
+        error: error.message
       });
     }
   }
