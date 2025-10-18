@@ -1,0 +1,66 @@
+### Test Portfolio API - Simplified (chỉ 3 trường bắt buộc)
+
+### 1. Health check
+GET http://localhost:3000/api/portfolio/health
+
+### 2. Lấy thông tin liên hệ
+GET http://localhost:3000/api/portfolio/contact-info
+
+### 3. Test gửi email liên hệ - Case 1
+POST http://localhost:3000/api/portfolio/contact
+Content-Type: application/json
+
+{
+  "name": "Nguyễn Văn A",
+  "email": "recruiter@company.com",
+  "message": "Chào bạn Duy Khang,\n\nTôi là HR Manager tại ABC Technology. Chúng tôi đang tìm kiếm một Frontend Developer có kinh nghiệm với React và Node.js.\n\nSau khi xem portfolio của bạn, chúng tôi rất ấn tượng với các dự án mà bạn đã thực hiện. Chúng tôi muốn mời bạn tham gia phỏng vấn cho vị trí này.\n\nMức lương: 15-20 triệu VND\nĐịa điểm: Quận 1, TP.HCM\nHình thức: Full-time\n\nBạn có thể phản hồi lại email này nếu quan tâm.\n\nTrân trọng,\nNguyễn Văn A"
+}
+
+### 4. Test gửi email - Case 2
+POST http://localhost:3000/api/portfolio/contact
+Content-Type: application/json
+
+{
+  "name": "Trần Thị B",
+  "email": "hr@startup.vn",
+  "message": "Chào bạn, chúng tôi có một dự án web app cần hỗ trợ. Bạn có thể liên hệ lại không?"
+}
+
+### 5. Test validation - Thiếu thông tin bắt buộc (sẽ báo lỗi)
+POST http://localhost:3000/api/portfolio/contact
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com"
+}
+
+### 6. Test validation - Email không hợp lệ (sẽ báo lỗi)
+POST http://localhost:3000/api/portfolio/contact
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "invalid-email",
+  "message": "This is a test message with enough characters"
+}
+
+### 7. Test validation - Message quá ngắn (sẽ báo lỗi)
+POST http://localhost:3000/api/portfolio/contact
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "message": "Short"
+}
+
+### 8. Test với nội dung dài
+POST http://localhost:3000/api/portfolio/contact
+Content-Type: application/json
+
+{
+  "name": "Lê Văn C",
+  "email": "ceo@bigcompany.com",
+  "message": "Kính chào bạn Duy Khang,\n\nTôi là CEO của Big Company Ltd, một công ty công nghệ hàng đầu tại Việt Nam. Chúng tôi đã theo dõi các dự án của bạn và rất ấn tượng với kỹ năng lập trình cũng như tư duy sáng tạo của bạn.\n\nChúng tôi đang có kế hoạch mở rộng team development và tìm kiếm những developer tài năng để tham gia vào các dự án lớn. Cụ thể:\n\n1. Dự án E-commerce Platform cho thị trường Đông Nam Á\n2. Ứng dụng Fintech cho thanh toán di động\n3. Hệ thống ERP cho doanh nghiệp vừa và nhỏ\n\nChúng tôi tin rằng bạn sẽ là một sự bổ sung tuyệt vời cho team của chúng tôi. Chế độ đãi ngộ và môi trường làm việc tại công ty rất cạnh tranh:\n\n- Mức lương: 25-35 triệu VND (có thể thương lượng)\n- Thưởng dự án và KPI\n- Bảo hiểm sức khỏe cao cấp\n- Cơ hội đi công tác nước ngoài\n- Môi trường làm việc quốc tế\n\nBạn có thể sắp xếp thời gian để chúng ta gặp mặt và trao đổi chi tiết hơn không?\n\nRất mong nhận được phản hồi từ bạn.\n\nTrân trọng,\nLê Văn C\nCEO - Big Company Ltd"
+}
