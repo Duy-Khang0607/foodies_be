@@ -156,10 +156,27 @@ class PortfolioController {
     } catch (error) {
       console.error('Portfolio contact email error:', error);
 
+      // Check if it's a timeout or connection error
+      if (error.message.includes('timeout') || error.message.includes('Connection')) {
+        return res.status(503).json({
+          success: false,
+          message: 'Dịch vụ email tạm thời không khả dụng. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua email: khangdev26@gmail.com',
+          error: 'Email service temporarily unavailable',
+          contactInfo: {
+            email: 'khangdev26@gmail.com',
+            message: 'Bạn có thể gửi email trực tiếp đến địa chỉ này'
+          }
+        });
+      }
+
       return res.status(500).json({
         success: false,
-        message: 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua email.',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua email: khangdev26@gmail.com',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        contactInfo: {
+          email: 'khangdev26@gmail.com',
+          message: 'Bạn có thể gửi email trực tiếp đến địa chỉ này'
+        }
       });
     }
   }

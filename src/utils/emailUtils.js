@@ -12,9 +12,15 @@ class EmailUtils {
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: process.env.EMAIL_PORT || 587,
       secure: process.env.EMAIL_SECURE === 'true' || false,
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000, // 30 seconds
+      socketTimeout: 60000, // 60 seconds
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+      },
+      tls: {
+        rejectUnauthorized: false // For development/testing
       }
     };
 
@@ -25,14 +31,25 @@ class EmailUtils {
     }
 
     try {
-      return nodemailer.createTransport(emailConfig);
+      const transporter = nodemailer.createTransporter(emailConfig);
+      
+      // Verify connection configuration
+      transporter.verify((error, success) => {
+        if (error) {
+          console.log('❌ Email transporter verification failed:', error.message);
+        } else {
+          console.log('✅ Email transporter is ready');
+        }
+      });
+      
+      return transporter;
     } catch (error) {
       console.error('❌ Failed to create email transporter:', error.message);
       return null;
     }
   }
 
-  async sendEmail(options) {
+  async sendEmail(options, retries = 3) {
     if (!this.transporter) {
       console.log('📧 Email simulation - Would send email to:', options.to);
       console.log('Subject:', options.subject);
@@ -40,21 +57,43 @@ class EmailUtils {
       return { messageId: 'simulated-' + Date.now() };
     }
 
-    try {
-      const mailOptions = {
-        from: process.env.EMAIL_FROM || `"Foodies App" <${process.env.EMAIL_USER}>`,
-        to: options.to,
-        subject: options.subject,
-        text: options.text,
-        html: options.html
-      };
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`📧 Sending email attempt ${attempt}/${retries}...`);
+        
+        const mailOptions = {
+          from: process.env.EMAIL_FROM || `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
+          to: options.to,
+          subject: options.subject,
+          text: options.text,
+          html: options.html,
+          replyTo: options.replyTo
+        };
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log('✅ Email sent successfully:', result.messageId);
-      return result;
-    } catch (error) {
-      console.error('❌ Failed to send email:', error.message);
-      throw new Error(`Failed to send email: ${error.message}`);
+        // Add timeout to the send operation
+        const result = await Promise.race([
+          this.transporter.sendMail(mailOptions),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Email send timeout')), 30000)
+          )
+        ]);
+        
+        console.log(`✅ Email sent successfully on attempt ${attempt}:`, result.messageId);
+        return result;
+        
+      } catch (error) {
+        console.error(`❌ Email attempt ${attempt} failed:`, error.message);
+        
+        if (attempt === retries) {
+          // Last attempt failed
+          throw new Error(`Failed to send email after ${retries} attempts: ${error.message}`);
+        }
+        
+        // Wait before retry (exponential backoff)
+        const waitTime = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s...
+        console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
     }
   }
 
