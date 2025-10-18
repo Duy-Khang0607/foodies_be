@@ -24,9 +24,18 @@ class EmailUtils {
       }
     };
 
+    // Debug: Log email configuration (without sensitive data)
+    console.log('📧 Email config check:');
+    console.log('   HOST:', emailConfig.host);
+    console.log('   PORT:', emailConfig.port);
+    console.log('   USER:', emailConfig.auth.user ? 'SET' : 'NOT SET');
+    console.log('   PASS:', emailConfig.auth.pass ? 'SET' : 'NOT SET');
+
     // If no email credentials, create a test account with ethereal
     if (!emailConfig.auth.user || !emailConfig.auth.pass) {
       console.log('⚠️  No email credentials found. Email features will be simulated.');
+      console.log('   Missing EMAIL_USER:', !emailConfig.auth.user);
+      console.log('   Missing EMAIL_PASS:', !emailConfig.auth.pass);
       return null;
     }
 
