@@ -107,26 +107,31 @@ class PortfolioController {
       const confirmationEmail = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
           <h2 style="color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 15px; margin-bottom: 25px;">
-            Thư mời phỏng vấn Frontend Developer
+            Cảm ơn bạn đã liên hệ!
           </h2>
           
           <p style="font-size: 16px; line-height: 1.6;">Xin chào <strong>${name}</strong>,</p>
           
+          <p style="font-size: 16px; line-height: 1.6;">
+            Cảm ơn bạn đã gửi tin nhắn qua Portfolio của tôi. Tôi đã nhận được thông tin của bạn và sẽ phản hồi sớm nhất có thể.
+          </p>
+          
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; margin: 25px 0;">
+            <h3 style="color: #2c3e50; margin-top: 0;">Tin nhắn của bạn:</h3>
             <div style="color: #2c3e50; line-height: 1.8; font-size: 15px;">
-              ${message.replace(/\n/g, '<br>')}
+              "${message.replace(/\n/g, '<br>')}"
             </div>
           </div>
           
           <p style="font-size: 16px; line-height: 1.6;">
-            Vui lòng phản hồi lại qua địa chỉ email: 
+            Tôi sẽ liên hệ lại với bạn qua email: 
             <a href="mailto:${email}" style="color: #3498db; text-decoration: none; font-weight: bold;">${email}</a> 
-            để xác nhận lịch phỏng vấn hoặc nếu bạn cần thêm thông tin.
+            trong thời gian sớm nhất.
           </p>
           
           <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 5px;">Trân trọng,</p>
-            <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin: 0;">Nhà tuyển dụng</p>
+            <p style="font-size: 16px; font-weight: bold; color: #2c3e50; margin: 0;">Duy Khang - Frontend Developer</p>
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;">
@@ -141,7 +146,7 @@ class PortfolioController {
       try {
         await emailUtils.sendEmail({
           to: email,
-          subject: 'Thư mời phỏng vấn Frontend Developer - IDB',
+          subject: 'Cảm ơn bạn đã liên hệ - Duy Khang Portfolio',
           html: confirmationEmail
         });
         console.log('✅ Confirmation email sent successfully');
@@ -223,49 +228,6 @@ class PortfolioController {
     }
   }
 
-  /**
-   * Debug endpoint to check email configuration
-   * REMOVE THIS IN PRODUCTION!
-   */
-  async debugEmailConfig(req, res) {
-    try {
-      const emailUtils = require('../utils/emailUtils');
-      
-      const config = {
-        EMAIL_HOST: process.env.EMAIL_HOST || 'NOT SET',
-        EMAIL_PORT: process.env.EMAIL_PORT || 'NOT SET',
-        EMAIL_SECURE: process.env.EMAIL_SECURE || 'NOT SET',
-        EMAIL_USER: process.env.EMAIL_USER ? 'SET' : 'NOT SET',
-        EMAIL_PASS: process.env.EMAIL_PASS ? `SET (${process.env.EMAIL_PASS.length} chars)` : 'NOT SET',
-        EMAIL_FROM: process.env.EMAIL_FROM || 'NOT SET',
-        PORTFOLIO_EMAIL: process.env.PORTFOLIO_EMAIL || 'NOT SET',
-        NODE_ENV: process.env.NODE_ENV || 'NOT SET'
-      };
-
-      // Check if transporter exists
-      const hasTransporter = emailUtils.transporter !== null;
-
-      res.status(200).json({
-        success: true,
-        message: 'Email Configuration Debug',
-        data: {
-          environmentVariables: config,
-          hasTransporter: hasTransporter,
-          transporterStatus: hasTransporter ? 'READY' : 'NOT INITIALIZED',
-          emailMode: hasTransporter ? 'REAL EMAIL' : 'SIMULATION MODE'
-        }
-      });
-
-    } catch (error) {
-      console.error('Debug email config error:', error);
-      
-      res.status(500).json({
-        success: false,
-        message: 'Không thể kiểm tra cấu hình email',
-        error: error.message
-      });
-    }
-  }
 }
 
 module.exports = new PortfolioController();

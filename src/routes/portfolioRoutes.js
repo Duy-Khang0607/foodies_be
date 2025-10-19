@@ -31,11 +31,4 @@ router.get('/health', (req, res) => {
   });
 });
 
-/**
- * @route   GET /api/portfolio/debug-email
- * @desc    Debug email configuration (REMOVE IN PRODUCTION!)
- * @access  Public
- */
-router.get('/debug-email', portfolioController.debugEmailConfig);
-
 module.exports = router;
