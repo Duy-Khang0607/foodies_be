@@ -7,7 +7,13 @@ class EmailUtils {
   }
 
   createTransporter() {
-    // Use environment variables for email configuration
+    // Check if SendGrid is configured (preferred for cloud)
+    if (process.env.SENDGRID_API_KEY) {
+      console.log('📧 Using SendGrid email service');
+      return this.createSendGridTransporter();
+    }
+
+    // Fallback to SMTP (Gmail, etc.)
     const emailConfig = {
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: process.env.EMAIL_PORT || 587,
@@ -65,6 +71,20 @@ class EmailUtils {
     }
   }
 
+  createSendGridTransporter() {
+    try {
+      // SendGrid configuration
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      
+      console.log('✅ SendGrid transporter created successfully');
+      return sgMail;
+    } catch (error) {
+      console.error('❌ Failed to create SendGrid transporter:', error.message);
+      return null;
+    }
+  }
+
   async sendEmail(options, retries = 3) {
     if (!this.transporter) {
       console.log('📧 Email simulation - Would send email to:', options.to);
@@ -73,12 +93,19 @@ class EmailUtils {
       return { messageId: 'simulated-' + Date.now() };
     }
 
+    // Check if we're using SendGrid
+    const isSendGrid = process.env.SENDGRID_API_KEY;
+    
     // Check if we're in a cloud environment (Render, Heroku, etc.)
     const isCloudEnvironment = process.env.NODE_ENV === 'production' && 
       (process.env.RENDER || process.env.HEROKU || process.env.VERCEL);
     
     if (isCloudEnvironment) {
       console.log('☁️  Cloud environment detected - using optimized settings');
+    }
+
+    if (isSendGrid) {
+      return await this.sendWithSendGrid(options);
     }
 
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -130,6 +157,29 @@ class EmailUtils {
         console.log(`⏳ Waiting ${waitTime}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
+    }
+  }
+
+  async sendWithSendGrid(options) {
+    try {
+      console.log('📧 Sending email via SendGrid...');
+      
+      const msg = {
+        to: options.to,
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+        subject: options.subject,
+        text: options.text,
+        html: options.html,
+        replyTo: options.replyTo
+      };
+
+      const result = await this.transporter.send(msg);
+      console.log('✅ SendGrid email sent successfully:', result[0].messageId);
+      return { messageId: result[0].messageId };
+      
+    } catch (error) {
+      console.error('❌ SendGrid email failed:', error.message);
+      throw error;
     }
   }
 
