@@ -40,7 +40,7 @@ class EmailUtils {
     }
 
     try {
-      const transporter = nodemailer.createTransporter(emailConfig);
+      const transporter = nodemailer.createTransport(emailConfig);
       
       // Verify connection configuration
       transporter.verify((error, success) => {
