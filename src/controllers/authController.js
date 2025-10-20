@@ -53,7 +53,6 @@ class AuthController {
       await user.save();
 
       // Log for audit trail (especially for email reuse detection)
-      console.log(`👤 New user registered: ${user.email} (${user.name}) at ${new Date().toISOString()}`);
 
       // Generate email verification token
       const emailToken = jwtUtils.generateEmailToken({
@@ -680,10 +679,7 @@ class AuthController {
    */
   async verifyEmail(req, res) {
     try {
-      console.log('🔍 Verify email started');
       const { token } = req.body;
-      console.log('📧 Token received:', token ? 'Yes' : 'No');
-
       if (!token) {
         return res.status(400).json({
           success: false,
@@ -692,14 +688,10 @@ class AuthController {
       }
 
       // Verify email token
-      console.log('🔐 Verifying JWT token...');
       const decoded = jwtUtils.verifyEmailToken(token);
-      console.log('✅ Token decoded:', decoded);
 
       // Find user
-      console.log('👤 Finding user with ID:', decoded.id);
       const user = await User.findById(decoded.id);
-      console.log('👤 User found:', user ? 'Yes' : 'No');
 
       if (!user) {
         return res.status(400).json({
@@ -709,7 +701,6 @@ class AuthController {
       }
 
       // Check if already verified
-      console.log('✉️ User email verified status:', user.isEmailVerified);
       if (user.isEmailVerified) {
         return res.status(400).json({
           success: false,
@@ -718,12 +709,10 @@ class AuthController {
       }
 
       // Mark email as verified
-      console.log('💾 Saving user verification status...');
       user.isEmailVerified = true;
       user.emailVerificationToken = undefined;
       user.emailVerificationExpires = undefined;
       await user.save();
-      console.log('✅ User saved successfully');
 
       // Send welcome email
       try {
@@ -850,14 +839,8 @@ class AuthController {
         });
       }
 
-      // Log thông tin trước khi xóa (cho audit)
-      console.log(`🗑️  Account deletion requested for user: ${user.email} (${user.name}) at ${new Date().toISOString()}`);
-
       // Xóa tài khoản user
       await User.findByIdAndDelete(userId);
-
-      // Log xóa thành công
-      console.log(`✅ Account successfully deleted for user: ${user.email} (${user.name}) at ${new Date().toISOString()}`);
 
       res.status(200).json({
         success: true,

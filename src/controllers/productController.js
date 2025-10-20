@@ -224,7 +224,7 @@ const createProduct = async (req, res) => {
       });
       
       await newProduct.save();
-      console.log('✅ Product saved to MongoDB:', newProduct._id);
+      ('✅ Product saved to MongoDB:', newProduct._id);
     } else {
       // Fallback to JSON file
       const { v4: uuidv4 } = require('uuid');
