@@ -5,7 +5,6 @@ let jwt;
 try {
   jwt = require('jsonwebtoken');
 } catch (error) {
-  console.log('⚠️  jsonwebtoken not found, using simple token fallback');
   jwt = {
     sign: (payload, secret, options = {}) => {
       const header = { typ: 'JWT', alg: 'HS256' };

@@ -70,7 +70,10 @@ class PortfolioController {
 
           <div style="text-align: center; margin-top: 30px; padding: 15px; background-color: #e8f5e8; border-radius: 5px;">
             <p style="margin: 0; color: #666; font-size: 14px;">
-              📅 Thời gian: ${new Date().toLocaleString("vi-VN")}
+              📅 Thời gian: ${new Date().toLocaleString("vi-VN", {
+                timeZone: "Asia/Ho_Chi_Minh",
+                hour12: false,
+              })}
             </p>
             <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
               🌐 Gửi từ: Portfolio Website
@@ -110,7 +113,10 @@ class PortfolioController {
           
           <div style="text-align: center; margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;">
             <p style="margin: 0; color: #7f8c8d; font-size: 13px;">
-              📅 Thời gian gửi: ${new Date().toLocaleString("vi-VN")}
+              📅 Thời gian gửi: ${new Date().toLocaleString("vi-VN", {
+                timeZone: "Asia/Ho_Chi_Minh",
+                hour12: false,
+              })}
             </p>
           </div>
         </div>

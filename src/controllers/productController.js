@@ -70,11 +70,9 @@ const getAllProducts = async (req, res) => {
     if (isMongoDBConnected()) {
       // Sử dụng MongoDB
       products = await Product.find().sort({ createdAt: -1 });
-      console.log('📊 Retrieved from MongoDB:', products.length, 'products');
     } else {
       // Fallback to JSON file
       products = readDataFromFile();
-      console.log('📁 Retrieved from JSON file:', products.length, 'products');
     }
     
     res.status(200).json({
@@ -151,15 +149,12 @@ const createProduct = async (req, res) => {
     let inputSource = 'none';
     
     if (file) {
-      console.log('🖼️ Processing image...');
-      
       // Check if input is URL or base64
       const validation = ImageProcessor.validateImageInput(file);
       let imageToProcess = file;
       
       if (validation.type === 'url') {
         // Convert URL to base64 first
-        console.log('🔗 Converting URL to base64...');
         const urlConversion = await ImageProcessor.convertUrlToBase64(file);
         
         if (!urlConversion.success) {
@@ -172,7 +167,6 @@ const createProduct = async (req, res) => {
         
         imageToProcess = urlConversion.base64;
         inputSource = 'url';
-        console.log(`✅ Image fetched from URL: ${(urlConversion.metadata.size / 1024).toFixed(2)}KB`);
       } else {
         inputSource = 'base64';
       }
@@ -206,8 +200,6 @@ const createProduct = async (req, res) => {
         source: inputSource,
         originalInput: validation.type === 'url' ? file : 'base64 data'
       };
-      
-      console.log(`✅ Image processed: ${imageProcessingInfo.originalSize} → ${imageProcessingInfo.processedSize} bytes (${imageProcessingInfo.compressionRatio}% reduction)`);
     }
     
     let newProduct;
@@ -249,7 +241,6 @@ const createProduct = async (req, res) => {
           message: 'Error saving product to file'
         });
       }
-      console.log('📁 Product saved to JSON file:', newProduct.id);
     }
     
     res.status(201).json({
@@ -305,8 +296,6 @@ const updateProduct = async (req, res) => {
         imageMetadata = null;
       } else {
         // Process new image (supports URL and base64)
-        console.log('🖼️ Processing updated image...');
-        
         // Check if input is URL or base64
         const validation = ImageProcessor.validateImageInput(file);
         let imageToProcess = file;
@@ -314,7 +303,6 @@ const updateProduct = async (req, res) => {
         
         if (validation.type === 'url') {
           // Convert URL to base64 first
-          console.log('🔗 Converting URL to base64...');
           const urlConversion = await ImageProcessor.convertUrlToBase64(file);
           
           if (!urlConversion.success) {
@@ -327,7 +315,6 @@ const updateProduct = async (req, res) => {
           
           imageToProcess = urlConversion.base64;
           inputSource = 'url';
-          console.log(`✅ Image fetched from URL: ${(urlConversion.metadata.size / 1024).toFixed(2)}KB`);
         }
         
         const imageOptions = {
@@ -358,8 +345,6 @@ const updateProduct = async (req, res) => {
           source: inputSource,
           originalInput: validation.type === 'url' ? file : 'base64 data'
         };
-        
-        console.log(`✅ Image processed: ${imageProcessingInfo.originalSize} → ${imageProcessingInfo.processedSize} bytes (${imageProcessingInfo.compressionRatio}% reduction)`);
       }
     }
     
@@ -389,7 +374,6 @@ const updateProduct = async (req, res) => {
           message: 'Product not found'
         });
       }
-      console.log('✅ Product updated in MongoDB:', updatedProduct._id);
     } else {
       // Fallback to JSON file
       const products = readDataFromFile();
@@ -422,7 +406,6 @@ const updateProduct = async (req, res) => {
           message: 'Error updating product in file'
         });
       }
-      console.log('📁 Product updated in JSON file:', updatedProduct.id);
     }
     
     const response = {
@@ -462,7 +445,6 @@ const deleteProduct = async (req, res) => {
           message: 'Product not found'
         });
       }
-      console.log('✅ Product deleted from MongoDB:', deletedProduct._id);
     } else {
       // Fallback to JSON file
       const products = readDataFromFile();
@@ -483,7 +465,6 @@ const deleteProduct = async (req, res) => {
           message: 'Error deleting product from file'
         });
       }
-      console.log('📁 Product deleted from JSON file:', deletedProduct.id);
     }
     
     res.status(200).json({

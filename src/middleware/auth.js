@@ -6,7 +6,6 @@ let rateLimit;
 try {
   rateLimit = require('express-rate-limit');
 } catch (error) {
-  console.log('⚠️  express-rate-limit not found, using simple rate limiting fallback');
   const rateLimitStore = new Map();
   
   rateLimit = (options) => {

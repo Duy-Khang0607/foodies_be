@@ -174,7 +174,6 @@ class EmailUtils {
       };
 
       const result = await this.transporter.send(msg);
-      console.log('✅ SendGrid email sent successfully:', result[0].headers['x-message-id']);
       return { messageId: result[0].headers['x-message-id'] };
       
     } catch (error) {

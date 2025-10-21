@@ -897,14 +897,8 @@ class AuthController {
         });
       }
 
-      // Log thông tin trước khi xóa (cho audit)
-      console.log(`🗑️  Admin deletion: Admin ${req.user.email} deleting user ${targetUser.email} (${targetUser.name}) at ${new Date().toISOString()}`);
-
       // Xóa tài khoản user
       await User.findByIdAndDelete(userId);
-
-      // Log xóa thành công
-      console.log(`✅ Admin deletion successful: User ${targetUser.email} (${targetUser.name}) deleted by admin ${req.user.email} at ${new Date().toISOString()}`);
 
       res.status(200).json({
         success: true,

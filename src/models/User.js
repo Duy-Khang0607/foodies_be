@@ -6,7 +6,6 @@ let validator;
 try {
   validator = require('validator');
 } catch (error) {
-  console.log('⚠️  validator not found, using simple validation fallback');
   validator = {
     isEmail: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
     isMobilePhone: (phone, locale) => /^[0-9\-\+\s\(\)]+$/.test(phone)
@@ -18,7 +17,6 @@ let bcrypt;
 try {
   bcrypt = require('bcryptjs');
 } catch (error) {
-  console.log('⚠️  bcryptjs not found, using Node.js crypto fallback');
   bcrypt = {
     hash: async (password, rounds = 12) => {
       return crypto.pbkdf2Sync(password, 'foodies-salt', 10000, 64, 'sha512').toString('hex');

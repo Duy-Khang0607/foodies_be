@@ -34,8 +34,6 @@ class ImageProcessor {
     };
 
     try {
-      console.log('🔗 Fetching image from URL:', imageUrl);
-      
       // Download image với timeout và headers
       const response = await axios.get(imageUrl, {
         responseType: 'arraybuffer',
@@ -73,8 +71,6 @@ class ImageProcessor {
       };
 
       result.success = true;
-      console.log(`✅ Image converted: ${(buffer.length / 1024).toFixed(2)}KB from ${imageUrl}`);
-
     } catch (error) {
       console.error('❌ Error converting URL to base64:', error.message);
       
