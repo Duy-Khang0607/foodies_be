@@ -130,11 +130,7 @@ class PortfolioController {
           html: confirmationEmail,
         });
       } catch (confirmError) {
-        console.log(
-          "⚠️  Warning: Could not send confirmation email:",
-          confirmError.message
-        );
-        // Không return error vì email chính đã gửi thành công
+        console.error("Confirmation email error:", confirmError.message);
       }
 
       return res.status(200).json({

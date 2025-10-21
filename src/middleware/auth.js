@@ -274,9 +274,6 @@ const validateRefreshToken = async (req, res, next) => {
 const logUserActivity = (action) => {
   return (req, res, next) => {
     // Add user activity logging
-    if (req.user) {
-      console.log(`User ${req.user.email} performed action: ${action} at ${new Date().toISOString()}`);
-    }
     next();
   };
 };

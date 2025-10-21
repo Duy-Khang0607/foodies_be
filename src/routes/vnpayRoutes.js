@@ -59,13 +59,6 @@ router.post("/create-payment", async (req, res) => {
     const amountInVND = parseFloat(amount);
     const amountInCents = Math.round(amountInVND * 1000); // Convert VND to cents
     
-    console.log('💰 Amount Debug:', {
-      originalAmount: amount,
-      amountInVND: amountInVND,
-      amountInCents: amountInCents,
-      type: typeof amount
-    });
-
     // Payment parameters
     const paymentParams = {
       vnp_Amount: amountInCents, // VNPay yêu cầu amount tính bằng xu

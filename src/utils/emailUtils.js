@@ -9,7 +9,6 @@ class EmailUtils {
   createTransporter() {
     // Check if SendGrid is configured (preferred for cloud)
     if (process.env.SENDGRID_API_KEY) {
-      console.log('📧 Using SendGrid email service');
       return this.createSendGridTransporter();
     }
 
@@ -37,18 +36,9 @@ class EmailUtils {
       rateLimit: 5
     };
 
-    // Debug: Log email configuration (without sensitive data)
-    console.log('📧 Email config check:');
-    console.log('   HOST:', emailConfig.host);
-    console.log('   PORT:', emailConfig.port);
-    console.log('   USER:', emailConfig.auth.user ? 'SET' : 'NOT SET');
-    console.log('   PASS:', emailConfig.auth.pass ? 'SET' : 'NOT SET');
 
     // If no email credentials, create a test account with ethereal
     if (!emailConfig.auth.user || !emailConfig.auth.pass) {
-      console.log('⚠️  No email credentials found. Email features will be simulated.');
-      console.log('   Missing EMAIL_USER:', !emailConfig.auth.user);
-      console.log('   Missing EMAIL_PASS:', !emailConfig.auth.pass);
       return null;
     }
 
@@ -76,7 +66,6 @@ class EmailUtils {
       // SendGrid configuration
       const sgMail = require('@sendgrid/mail');
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      
       console.log('✅ SendGrid transporter created successfully');
       return sgMail;
     } catch (error) {
@@ -87,9 +76,6 @@ class EmailUtils {
 
   async sendEmail(options, retries = 3) {
     if (!this.transporter) {
-      console.log('📧 Email simulation - Would send email to:', options.to);
-      console.log('Subject:', options.subject);
-      console.log('Content:', options.html || options.text);
       return { messageId: 'simulated-' + Date.now() };
     }
 
@@ -100,18 +86,12 @@ class EmailUtils {
     const isCloudEnvironment = process.env.NODE_ENV === 'production' && 
       (process.env.RENDER || process.env.HEROKU || process.env.VERCEL);
     
-    if (isCloudEnvironment) {
-      console.log('☁️  Cloud environment detected - using optimized settings');
-    }
-
     if (isSendGrid) {
       return await this.sendWithSendGrid(options);
     }
 
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        console.log(`📧 Sending email attempt ${attempt}/${retries}...`);
-        
         const mailOptions = {
           from: process.env.EMAIL_FROM || `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
           to: options.to,
@@ -130,22 +110,15 @@ class EmailUtils {
           )
         ]);
         
-        console.log(`✅ Email sent successfully on attempt ${attempt}:`, result.messageId);
         return result;
         
       } catch (error) {
         console.error(`❌ Email attempt ${attempt} failed:`, error.message);
         
         if (attempt === retries) {
-          // Last attempt failed - log the email instead of throwing error
-          console.log('📧 Email sending failed, logging email content instead:');
-          console.log('   To:', options.to);
-          console.log('   Subject:', options.subject);
-          console.log('   Content preview:', (options.html || options.text).substring(0, 200) + '...');
-          
           // Return a simulated success for cloud environments
           if (isCloudEnvironment) {
-            console.log('☁️  Cloud environment: Email logged instead of sent');
+            console.og('☁️  Cloud environment: Email logged instead of sent');
             return { messageId: 'logged-' + Date.now(), logged: true };
           }
           
@@ -154,7 +127,6 @@ class EmailUtils {
         
         // Wait before retry (exponential backoff)
         const waitTime = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s...
-        console.log(`⏳ Waiting ${waitTime}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
@@ -162,7 +134,6 @@ class EmailUtils {
 
   async sendWithSendGrid(options) {
     try {
-      console.log('📧 Sending email via SendGrid...');
       
       const msg = {
         to: options.to,
