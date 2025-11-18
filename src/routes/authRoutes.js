@@ -159,6 +159,14 @@ router.get('/me', authenticate, (req, res) => {
 router.delete('/delete-account', authenticate, authController.deleteAccount);
 
 /**
+ * @route   GET /api/auth/admin/users
+ * @desc    Get all users with pagination and filtering
+ * @access  Private (Admin only)
+ * @query   { page?, limit?, search?, role?, isActive?, isEmailVerified? }
+ */
+router.get('/admin/users', authenticate, authController.getAllUsers);
+
+/**
  * @route   DELETE /api/auth/admin/users/:userId
  * @desc    Admin delete user account
  * @access  Private (Admin only)

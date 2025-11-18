@@ -174,11 +174,11 @@ class AuthController {
         });
       }
 
-      // Check if account is active
+      // Check if account is active (isActive must be true to login)
       if (!user.isActive) {
-        return res.status(401).json({
+        return res.status(403).json({
           success: false,
-          message: 'Tài khoản đã bị vô hiệu hóa'
+          message: 'Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên'
         });
       }
 
@@ -489,6 +489,14 @@ class AuthController {
         });
       }
 
+      // Check if email is verified (isEmailVerified must be true to send reset email)
+      if (!user.isEmailVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Email chưa được xác thực. Vui lòng xác thực email trước khi reset mật khẩu'
+        });
+      }
+
       // Verify current password
       const isCurrentPasswordValid = await user.comparePassword(currentPassword);
       if (!isCurrentPasswordValid) {
@@ -547,9 +555,17 @@ class AuthController {
 
       // Always return success to prevent email enumeration
       if (!user) {
-        return res.status(200).json({
-          success: true,
-          message: 'Nếu email tồn tại, link reset mật khẩu đã được gửi'
+        return res.status(400).json({
+          success: false,
+          message: 'Email không tồn tại trong hệ thống'
+        });
+      }
+
+      // Check if email is verified (isEmailVerified must be true to send reset email)
+      if (!user.isEmailVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Email chưa được xác thực. Vui lòng xác thực email trước khi reset mật khẩu'
         });
       }
 
@@ -620,6 +636,14 @@ class AuthController {
         return res.status(400).json({
           success: false,
           message: 'Token không hợp lệ hoặc đã hết hạn'
+        });
+      }
+
+      // Check if email is verified (isEmailVerified must be true to reset password)
+      if (!user.isEmailVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Email chưa được xác thực. Không thể reset mật khẩu'
         });
       }
 
@@ -771,7 +795,7 @@ class AuthController {
       });
 
       // Generate verification URL
-      const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${emailToken}`;
+      const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${emailToken}`;
 
       // Send verification email
       await emailUtils.sendEmailVerification(user, verificationUrl);
@@ -849,6 +873,92 @@ class AuthController {
 
     } catch (error) {
       console.error('Delete account error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi server. Vui lòng thử lại sau'
+      });
+    }
+  }
+
+  /**
+   * Get All Users (Admin only)
+   */
+  async getAllUsers(req, res) {
+    try {
+      // Kiểm tra quyền admin
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Không có quyền truy cập. Chỉ admin mới có thể xem danh sách người dùng'
+        });
+      }
+
+      // Get query parameters for pagination and filtering
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const search = req.query.search || '';
+      const role = req.query.role || '';
+      const isActive = req.query.isActive;
+      const isEmailVerified = req.query.isEmailVerified;
+
+      // Build filter object
+      const filter = {};
+      
+      // Search by name or email
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      // Filter by role
+      if (role) {
+        filter.role = role;
+      }
+
+      // Filter by active status
+      if (isActive !== undefined) {
+        filter.isActive = isActive === 'true';
+      }
+
+      // Filter by email verification status
+      if (isEmailVerified !== undefined) {
+        filter.isEmailVerified = isEmailVerified === 'true';
+      }
+
+      // Get total count for pagination
+      const totalUsers = await User.countDocuments(filter);
+
+      // Get users with pagination
+      const users = await User.find(filter)
+        .select('-password -refreshTokens -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      // Calculate pagination info
+      const totalPages = Math.ceil(totalUsers / limit);
+
+      res.status(200).json({
+        success: true,
+        message: 'Lấy danh sách người dùng thành công',
+        data: {
+          users,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalUsers,
+            limit,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('Get all users error:', error);
       res.status(500).json({
         success: false,
         message: 'Lỗi server. Vui lòng thử lại sau'
